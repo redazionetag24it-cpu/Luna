@@ -1,0 +1,40 @@
+name: Build Luna APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract Luna source
+        run: |
+          mkdir -p luna-src
+          unzip -q LunaV1-Android.zip -d luna-src
+
+      - name: Install Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Build debug APK
+        working-directory: luna-src/LunaV1-Android
+        run: ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Luna-APK
+          path: luna-src/LunaV1-Android/app/build/outputs/apk/debug/app-debug.apk
